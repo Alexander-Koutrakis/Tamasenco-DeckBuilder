@@ -13,7 +13,7 @@ public class CardContainer : MonoBehaviour
     public void SetCard(PokemonCard pokemonCard)
     {
         Image cardImage = GetComponent<Image>();
-        cardImage.sprite = GameMaster.GetPokemonCardSprite(pokemonCard.NationalPokedexNumber);
+        cardImage.sprite = CardLoader.GetPokemonCardSprite(pokemonCard.NationalPokedexNumber);
         this.pokemonCard = pokemonCard;
         gameObject.name = pokemonCard.Name;
 

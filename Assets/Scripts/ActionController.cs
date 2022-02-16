@@ -1,8 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
+
+
+// ActionController is responsible for the Tweening Animations of the Cards
 public class ActionController : MonoBehaviour
 {
     public static Vector2 BottomRightCornerPosition { private set; get; }
@@ -10,11 +11,9 @@ public class ActionController : MonoBehaviour
     public static Vector2 BottomLeftCornerPosition { private set; get; }
     private Image fadeImage;
     private RectTransform rectTransform;
-    [SerializeField] private Button addCardButton;
-    [SerializeField] private Button removeCardButton;
+    [SerializeField] private Button actionButton;
     [SerializeField] private Button returnButton;
-    public Button AddCardButton { get { return this.addCardButton; } }
-    public Button RemoveCardButton { get { return this.removeCardButton; } }
+  
     private DeckController deckController;
 
     private void Awake()
@@ -69,43 +68,44 @@ public class ActionController : MonoBehaviour
                                                         image.gameObject.SetActive(true); } });
     }
     private void SetActions(CardContainer cardContainer)
-    {        
-        CardContainer CardContainer = cardContainer;
+    {
+        GameObject oldParent = cardContainer.transform.parent.gameObject;
         switch (deckController.DeckControllerState)
         {
-            case DeckControllerState.ShowingAllDeckNoAdding:
-                addCardButton.gameObject.SetActive(false);
-                removeCardButton.gameObject.SetActive(false);
-                break;
             case DeckControllerState.ShowingSelectedDeck:
-                addCardButton.gameObject.SetActive(false);
-
-                removeCardButton.gameObject.SetActive(true);
-                removeCardButton.onClick.RemoveAllListeners();
-                removeCardButton.onClick.AddListener(delegate { deckController.RemoveCard(CardContainer); });
-                removeCardButton.onClick.AddListener(delegate { MoveCardToPosition(BottomLeftCornerPosition, cardContainer, true); });
-                removeCardButton.onClick.AddListener(delegate { ScaleCard(cardContainer, new Vector2(1, 1)); });
-                removeCardButton.onClick.AddListener(delegate { FadeImage(fadeImage, 0); });
+                actionButton.onClick.RemoveAllListeners();
+                CardContainer CardContainerToRemove = cardContainer;
+                actionButton.onClick.AddListener(delegate { deckController.RemoveCard(cardContainer); });// may have to use CardContainerToRemove
+                actionButton.onClick.AddListener(delegate { MoveCardToPosition(BottomLeftCornerPosition, cardContainer, true); });
+                actionButton.onClick.AddListener(delegate { ScaleCard(cardContainer, new Vector2(1, 1)); });
+                actionButton.onClick.AddListener(delegate { FadeImage(fadeImage, 0); });
                 break;
             case DeckControllerState.AddingCards:
-                removeCardButton.gameObject.SetActive(false);
-
-                addCardButton.gameObject.SetActive(true);
-                addCardButton.onClick.RemoveAllListeners();
-                addCardButton.onClick.AddListener(delegate { deckController.AddCard(CardContainer); });
-                addCardButton.onClick.AddListener(delegate { MoveCardToPosition(BottomRightCornerPosition, cardContainer); });
-                addCardButton.onClick.AddListener(delegate { ScaleCard(cardContainer, new Vector2(1, 1)); });
-                addCardButton.onClick.AddListener(delegate { FadeImage(fadeImage, 0); });
+                actionButton.onClick.RemoveAllListeners();
+                CardContainer CardContainerToAdd = DuplicateCardToAdd(cardContainer);
+                actionButton.onClick.AddListener(delegate { deckController.AddCard(CardContainerToAdd); });
+                actionButton.onClick.AddListener(delegate { MoveCardToPosition(BottomRightCornerPosition, CardContainerToAdd); });
+                returnButton.onClick.AddListener(delegate { ScaleCard(cardContainer, new Vector2(1, 1)); });
+                returnButton.onClick.AddListener(delegate { UnfocusCard(cardContainer, oldParent); });
+                returnButton.onClick.AddListener(delegate { FadeImage(fadeImage, 0); });
                 break;
         }
 
-        GameObject oldParent = cardContainer.transform.parent.gameObject;
+        
         returnButton.onClick.RemoveAllListeners();
         returnButton.onClick.AddListener(delegate { ScaleCard(cardContainer, new Vector2(1, 1));});
         returnButton.onClick.AddListener(delegate { UnfocusCard(cardContainer, oldParent); });
         returnButton.onClick.AddListener(delegate { FadeImage(fadeImage, 0);});
     }
 
+    private CardContainer DuplicateCardToAdd(CardContainer cardContainer)
+    {
+        GameObject cardContainerClone = Instantiate(cardContainer.gameObject, cardContainer.gameObject.transform.position,
+                                                    cardContainer.gameObject.transform.rotation,cardContainer.gameObject.transform.parent);
+        cardContainerClone.transform.localScale = cardContainer.transform.localScale;
+        CardContainer newCardContainer = cardContainerClone.GetComponent<CardContainer>();
+        return newCardContainer;
+    }
 }
 
 

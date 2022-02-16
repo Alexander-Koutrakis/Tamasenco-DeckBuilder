@@ -9,7 +9,7 @@ public class LoadingScreen
     private Image fillingImage;
     private TMP_Text loadingText;
 
-    public LoadingScreen(GameMaster gameMaster)
+    public LoadingScreen(CardLoader gameMaster)
     {
         this.pokeball = gameMaster.GetComponentsInChildren<Image>()[2];
         this.fillingImage = gameMaster.GetComponentsInChildren<Image>()[1];

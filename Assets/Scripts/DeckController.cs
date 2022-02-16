@@ -1,9 +1,12 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using PokemonTcgSdk.Models;
 using System.Linq;
+
+//  DeckController is responsible for the presentation the Deck 
+//  And the Adding/Removing of the cards
+
 public class DeckController : MonoBehaviour
 {
     private Deck shownDeck;
@@ -21,8 +24,9 @@ public class DeckController : MonoBehaviour
     {
         actionController = GetComponentInChildren<ActionController>(true);
         gridLayout = GetComponentInChildren<GridLayoutGroup>(true);
-        DeckControllerState = DeckControllerState.ShowingAllDeckNoAdding;
     }
+
+
     private void CreateGrid(Deck deck)
     {
         while(gridPositions.Count< deck.Cards.Count)
@@ -50,9 +54,8 @@ public class DeckController : MonoBehaviour
             CreateDeckCard(deck.Cards[i]);
         }
     }
-    private IEnumerator MoveAllCardsToPositions()
+    private void MoveAllCardsToPositions()
     {
-        yield return null;
         for(int i = 0; i < cardContainers.Count; i++)
         {
             actionController.MoveCardToPosition(gridPositions[i].transform.position, cardContainers[i]);
@@ -65,28 +68,31 @@ public class DeckController : MonoBehaviour
         shownDeck = deck;
         CreateGrid(deck);
         CreateAllDeckCards(deck);
-        StartCoroutine(MoveAllCardsToPositions());
-        if (shownDeck != allCardsDeck)
-        {
-            DeckControllerState = DeckControllerState.ShowingSelectedDeck;
-        }
+        Invoke("MoveAllCardsToPositions",0);
     }
-    public void AddCardsToSelectedDeck(Deck deck)
+
+    public void ShowDeck()
     {
-        this.selectedDeck = deck;
-        if (shownDeck != allCardsDeck)
-        {
-            ShowDeck(allCardsDeck);
-        }
-        DeckControllerState= DeckControllerState.AddingCards;
+        ClearDeck();
+        CreateGrid(selectedDeck);
+        CreateAllDeckCards(selectedDeck);
+        Invoke("MoveAllCardsToPositions", 0);
+    }
+
+    public void AddCardsToSelectedDeck()
+    {
+        ShowDeck(allCardsDeck);
+        DeckControllerState = DeckControllerState.AddingCards;
     }
     public void AddCard(CardContainer cardContainer)
     {
         selectedDeck.AddCard(cardContainer.PokemonCard);
+        SaveSystem.SaveGame();
     }
     public void RemoveCard(CardContainer cardContainer)
     {
         shownDeck.RemoveCard(cardContainer.PokemonCard);
+        SaveSystem.SaveGame();
     }
     private void RearrangeCards()
     {
@@ -126,6 +132,11 @@ public class DeckController : MonoBehaviour
         allCardsDeck = deck;
         shownDeck = allCardsDeck;
     }
+
+    public void SetSelectedDeck(Deck deck)
+    {
+        selectedDeck = deck;
+    }
 }
 
-public enum DeckControllerState { ShowingAllDeckNoAdding,ShowingSelectedDeck,AddingCards}
+public enum DeckControllerState { ShowingSelectedDeck,AddingCards}

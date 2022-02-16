@@ -5,7 +5,9 @@ using PokemonTcgSdk;
 using PokemonTcgSdk.Models;
 using UnityEngine.Networking;
 
-public class GameMaster : MonoBehaviour
+// CardLoader Loads and caches the card data from https://pokemontcg.io/ 
+// and informs the App when its ready
+public class CardLoader : MonoBehaviour
 {
     private class PokemonCardData
     {
@@ -15,7 +17,7 @@ public class GameMaster : MonoBehaviour
     private static Dictionary<int, PokemonCardData> cards;
     private int cardsLoaded=0;
 
-    private void Start()
+    private void Awake()
     {
         LoadCards();
         StartCoroutine(Loading());
@@ -97,7 +99,6 @@ public class GameMaster : MonoBehaviour
     }
     private IEnumerator Loading()
     {
-
         LoadingScreen loadingScreen = new LoadingScreen(this);
         while (cardsLoaded< cards.Count - 1)
         {            
@@ -119,10 +120,5 @@ public class GameMaster : MonoBehaviour
         loadingScreen.DestroyLoadingScreen();
     }
 
-    public float CardsLoadedPercent()
-    {
-        return cardsLoaded / cards.Count;
-    }
-
-
+   
 }
