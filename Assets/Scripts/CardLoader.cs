@@ -23,7 +23,9 @@ public class CardLoader : MonoBehaviour
         StartCoroutine(Loading());
         DontDestroyOnLoad(gameObject);
     }
-    
+
+    // Load Pokemon cards from https://pokemontcg.io/
+    // And cache only the cards that are Pokemon
     private void LoadCards()
     {
         List<PokemonCard> tempCards=new List<PokemonCard>();
@@ -83,6 +85,7 @@ public class CardLoader : MonoBehaviour
                 break;
             case UnityWebRequest.Result.ProtocolError:
                 Debug.LogError(cardData.PokemonCard.ImageUrl + ": HTTP Error: " + webRequest.error);
+                StartCoroutine(LoadCardImage(cardData));
                 break;
             case UnityWebRequest.Result.Success:
                 cardData.CardSprite = WebSprite(webRequest);

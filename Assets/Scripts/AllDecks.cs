@@ -34,13 +34,11 @@ public class AllDecks : MonoBehaviour
         button.onClick.AddListener(delegate { OpenDeck(deckToOpen); });
         deckButtonPrefabClone.transform.SetAsFirstSibling();
     }
-
     public void CreateNewDeck()
     {
         Deck deck = new Deck();
         CreateDeckButton(deck);
     }
-
     private void CreateAllDecks()
     {
         for(int i=0;i< decks.Count; i++)
@@ -48,12 +46,6 @@ public class AllDecks : MonoBehaviour
             CreateDeckButton(decks[i]);
         }
     }
-
-    public void LoadDecks(List<Deck> decks)
-    {
-        this.decks = decks;
-    }
-
     public void OpenDeck(Deck deck)
     {
         deckController.SetSelectedDeck(deck);
