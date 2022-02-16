@@ -35,12 +35,10 @@ public class CardLoader : MonoBehaviour
             try
             {
                 tempCards = Card.Get<Pokemon>().Cards;
-                Debug.Log("Correct");
                 break;
             }
             catch
             {
-                Debug.Log("Error");
                 if (retries > 0)
                     retries--;
                 else
@@ -60,7 +58,7 @@ public class CardLoader : MonoBehaviour
 
                     pokemonCardsToLoadImage.Enqueue(cardData);
                 }
-                //StartCoroutine(LoadCardImage(cardData));
+
             }
         }
 
