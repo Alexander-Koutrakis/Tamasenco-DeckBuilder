@@ -15,6 +15,7 @@ public class DeckController : MonoBehaviour
     private List<CardContainer> cardContainers = new List<CardContainer>();
     private List<GameObject> gridPositions = new List<GameObject>();
     private GridLayoutGroup gridLayout;
+
     private ActionController actionController;
     [SerializeField] private GameObject cardPrefab;
     [SerializeField] private GameObject gridPositionGameobject;
@@ -24,6 +25,7 @@ public class DeckController : MonoBehaviour
     {
         actionController = GetComponentInChildren<ActionController>(true);
         gridLayout = GetComponentInChildren<GridLayoutGroup>(true);
+        
     }
 
 
@@ -33,6 +35,7 @@ public class DeckController : MonoBehaviour
         {
             CreateGridPosition();
         }
+
     }
     private void CreateGridPosition()
     {
@@ -64,11 +67,21 @@ public class DeckController : MonoBehaviour
     }
     public void ShowDeck(Deck deck)
     {
-        ClearDeck();
         shownDeck = deck;
+
+        if (deck.Cards.Count == 0)
+        {
+            AddCardsToSelectedDeck();
+            return;
+        }
+        if (deck != allCardsDeck)
+        {
+            DeckControllerState = DeckControllerState.ShowingSelectedDeck;
+        }
+        ClearDeck(); 
         CreateGrid(deck);
         CreateAllDeckCards(deck);
-        Invoke("MoveAllCardsToPositions",0);
+        Invoke("MoveAllCardsToPositions", 0);
     }
 
     public void ShowDeck()
@@ -77,6 +90,7 @@ public class DeckController : MonoBehaviour
         CreateGrid(selectedDeck);
         CreateAllDeckCards(selectedDeck);
         Invoke("MoveAllCardsToPositions", 0);
+        DeckControllerState = DeckControllerState.ShowingSelectedDeck;
     }
 
     public void AddCardsToSelectedDeck()
@@ -92,6 +106,7 @@ public class DeckController : MonoBehaviour
     public void RemoveCard(CardContainer cardContainer)
     {
         shownDeck.RemoveCard(cardContainer.PokemonCard);
+        cardContainers.Remove(cardContainer);
         SaveSystem.SaveGame();
     }
     private void RearrangeCards()
@@ -130,7 +145,7 @@ public class DeckController : MonoBehaviour
     public void LoadAllCardsDeck(Deck deck)
     {
         allCardsDeck = deck;
-        shownDeck = allCardsDeck;
+        CreateGrid(allCardsDeck);
     }
 
     public void SetSelectedDeck(Deck deck)

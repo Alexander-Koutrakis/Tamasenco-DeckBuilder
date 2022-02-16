@@ -10,7 +10,7 @@ public class AllDecks : MonoBehaviour
     private DeckController deckController;
     private GridLayoutGroup gridLayoutGroup;
     [SerializeField]private GameObject deckButtonPrefab;
-    private List<Deck> decks;
+    private List<Deck> decks=new List<Deck>();
     public static AllDecks Instance;
 
     private void Awake()
@@ -18,12 +18,6 @@ public class AllDecks : MonoBehaviour
         gridLayoutGroup = GetComponentInChildren<GridLayoutGroup>();
         deckController = FindObjectOfType<DeckController>();
         Instance = this;
-    }
-
-    private void Start()
-    {
-        LoadDecks();
-        CreateAllDecks();
     }
 
     private void CreateDeckButton(Deck deck)
@@ -37,9 +31,10 @@ public class AllDecks : MonoBehaviour
     public void CreateNewDeck()
     {
         Deck deck = new Deck();
+        decks.Add(deck);
         CreateDeckButton(deck);
     }
-    private void CreateAllDecks()
+    public void CreateAllDecks()
     {
         for(int i=0;i< decks.Count; i++)
         {
@@ -61,19 +56,21 @@ public class AllDecks : MonoBehaviour
             SavedDeck savedDeck = decks[i].SaveDeck();
             savedDecks[i] = savedDeck;
         }
-
         return savedDecks;
     }
 
-    private void LoadDecks()
+    public void LoadDecks()
     {
-        Save save = SaveSystem.LoadGame();
-        SavedDeck[] savedDecks = save.SavedDecks;
-        for (int i = 0; i < savedDecks.Length; i++)
+        if (SaveSystem.SaveExists())
         {
-            Deck deck = new Deck();
-            deck.LoadDeck(savedDecks[i]);
-            decks.Add(deck);
+            Save save = SaveSystem.LoadGame();
+            SavedDeck[] savedDecks = save.SavedDecks;
+            for (int i = 0; i < savedDecks.Length; i++)
+            {
+                Deck deck = new Deck();
+                deck.LoadDeck(savedDecks[i]);
+                decks.Add(deck);
+            }
         }
     }
 }

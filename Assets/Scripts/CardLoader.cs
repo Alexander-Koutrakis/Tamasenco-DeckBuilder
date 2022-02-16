@@ -14,33 +14,34 @@ public class CardLoader : MonoBehaviour
         public PokemonCard PokemonCard;
         public Sprite CardSprite;
     }
-    private static Dictionary<int, PokemonCardData> cards;
+    private static Dictionary<int, PokemonCardData> cards= new Dictionary<int, PokemonCardData>();
     private int cardsLoaded=0;
+    private bool loadingimage = false;
 
-    private void Awake()
+    private void Start()
     {
         LoadCards();
-        StartCoroutine(Loading());
-        DontDestroyOnLoad(gameObject);
     }
 
     // Load Pokemon cards from https://pokemontcg.io/
     // And cache only the cards that are Pokemon
     private void LoadCards()
     {
-        List<PokemonCard> tempCards=new List<PokemonCard>();
-        cards = new Dictionary<int, PokemonCardData>();
+        List<PokemonCard> tempCards = new List<PokemonCard>();
+        Queue<PokemonCardData> pokemonCardsToLoadImage = new Queue<PokemonCardData>();
         int retries = 100;
         while (true)
         {
             try
             {
                 tempCards = Card.Get<Pokemon>().Cards;
+                Debug.Log("Correct");
                 break;
             }
-            catch 
+            catch
             {
-                if (retries >0 )
+                Debug.Log("Error");
+                if (retries > 0)
                     retries--;
                 else
                     throw;
@@ -56,11 +57,18 @@ public class CardLoader : MonoBehaviour
                 if (!cards.ContainsKey(tempCards[i].NationalPokedexNumber))
                 {
                     cards.Add(tempCards[i].NationalPokedexNumber, cardData);
-                }                
-                StartCoroutine(LoadCardImage(cardData));
+
+                    pokemonCardsToLoadImage.Enqueue(cardData);
+                }
+                //StartCoroutine(LoadCardImage(cardData));
             }
         }
+
+        StartCoroutine(LoadAllcardImages(pokemonCardsToLoadImage));
+        StartCoroutine(Loading());
     }
+
+
     public static PokemonCard GetPokemonCard(int index)
     {
         return cards[index].PokemonCard;
@@ -69,9 +77,26 @@ public class CardLoader : MonoBehaviour
     {
         return cards[index].CardSprite;
     }   
+
+
+    
+    private IEnumerator LoadAllcardImages(Queue<PokemonCardData> cardDatas)
+    {
+        while (cardDatas.Count > 0)
+        {
+            if (!loadingimage)
+            {
+                Debug.Log("Downloading " + cardDatas.Peek().PokemonCard.Name);
+                StartCoroutine(LoadCardImage(cardDatas.Dequeue()));
+            }
+            yield return null;
+        }
+    }
     private IEnumerator LoadCardImage(PokemonCardData cardData)
     {
         UnityWebRequest webRequest = UnityWebRequestTexture.GetTexture(cardData.PokemonCard.ImageUrl);
+        loadingimage = true;
+        Debug.Log("Downloading " + cardData.PokemonCard.Name);
         yield return webRequest.SendWebRequest();
 
         switch (webRequest.result)
@@ -90,6 +115,7 @@ public class CardLoader : MonoBehaviour
             case UnityWebRequest.Result.Success:
                 cardData.CardSprite = WebSprite(webRequest);
                 cardsLoaded++;
+                loadingimage = false;
                 break;
         }
     }
@@ -118,8 +144,10 @@ public class CardLoader : MonoBehaviour
         }
 
         DeckController deckController = FindObjectOfType<DeckController>();
+        AllDecks allDecks= FindObjectOfType<AllDecks>();
+        allDecks.LoadDecks();
+        allDecks.CreateAllDecks();
         deckController.LoadAllCardsDeck(deck);
-        deckController.ShowDeck(deck);
         loadingScreen.DestroyLoadingScreen();
     }
 
